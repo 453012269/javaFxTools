@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<GridPane xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1"
+          fx:controller="plugin.javafxtools.controller.HttpRequestController"
+          hgap="10" vgap="10" prefWidth="1000" prefHeight="700">
+
+    <padding>
+        <Insets bottom="10" left="10" right="10" top="10"/>
+    </padding>
+
+    <!-- 第0行 - 开始时间 -->
+    <Label text="开始时间 (yyyy-MM-dd HH:mm:ss):" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+    <TextField fx:id="startTimeField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+    <Button fx:id="nowButton" text="现在" onAction="#handleNowButton" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+
+    <!-- 第1行 - 执行间隔 -->
+    <Label text="执行间隔 (秒):" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+    <TextField fx:id="intervalField" text="60" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+    <!-- 第2行 - URL -->
+    <Label text="请求 URL:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+    <TextField fx:id="urlField" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
+
+    <!-- 第3行 - 请求方法 -->
+    <Label text="请求方法:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+    <ComboBox fx:id="methodComboBox" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+    <!-- 第4行 - 参数 -->
+    <Label text="请求参数:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+    <TextArea fx:id="paramsArea" prefRowCount="5" GridPane.columnIndex="1" GridPane.rowIndex="4" GridPane.columnSpan="2"/>
+
+    <!-- 第5行 - 按钮 -->
+    <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="5">
+        <Button fx:id="startButton" text="开始" onAction="#handleStartButton"/>
+        <Button fx:id="stopButton" text="停止" onAction="#handleStopButton"/>
+    </HBox>
+
+    <!-- 第6行 - 日志 -->
+    <Label text="执行日志:" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+    <TextArea fx:id="logArea" editable="false" prefRowCount="10" GridPane.columnIndex="1" GridPane.rowIndex="6" GridPane.columnSpan="2"/>
+</GridPane>
