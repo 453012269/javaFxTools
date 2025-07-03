@@ -51,6 +51,20 @@ if errorlevel 1 (
     exit /b 2
 )
 
+REM === 生成MD5校验 ===
+set OUT_EXE=%OUTPUT_DIR%\%APP_NAME%\%APP_NAME%.exe
+
+if exist "%OUT_EXE%" (
+    for /f "skip=1 tokens=1" %%i in ('certutil -hashfile "%OUT_EXE%" MD5') do (
+        echo %%i > "%OUT_EXE%.md5.txt"
+        echo [INFO] MD5已写入: %OUT_EXE%.md5.txt
+        goto :after_md5
+    )
+) else (
+    echo [WARN] 未找到可生成MD5的EXE：%OUT_EXE%
+)
+:after_md5
+
 echo [INFO] 打包完成，输出目录：%OUTPUT_DIR%
 pause
 endlocal
