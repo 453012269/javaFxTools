@@ -13,20 +13,27 @@ import com.google.gson.reflect.TypeToken;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 
 /**
  * 应用程序启动器控制器 - 优化版，使用 JSON 文本格式存储应用路径，更易于查看和编辑
  */
 public class AppLauncherController implements ModuleLogger {
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static final ExecutorService backgroundExecutor = Executors.newCachedThreadPool();
 
     private static final String STORAGE_FILE = "app_launcher_paths.json";
     private static final long PROCESS_CHECK_DELAY_MS = 1000;
     private static final int PROCESS_TERMINATE_TIMEOUT_MS = 2000;
 
-    @FXML private TextField appPathField;
-    @FXML private ListView<String> appListView;
-    @FXML private Button browseButton, addButton, launchSingleButton, launchAllButton, killProcessButton, removeButton, clearButton;
-    @FXML private TextArea logArea;
+    @FXML
+    private TextField appPathField;
+    @FXML
+    private ListView<String> appListView;
+    @FXML
+    private Button browseButton, addButton, launchSingleButton, launchAllButton, killProcessButton, removeButton, clearButton;
+    @FXML
+    private TextArea logArea;
 
     private final List<String> appPaths = new ArrayList<>();
     private Stage primaryStage;
@@ -44,6 +51,21 @@ public class AppLauncherController implements ModuleLogger {
     public void cleanup() {
         processTracker.killAllProcesses();
         appPaths.clear();
+        // 关闭线程池
+        backgroundExecutor.shutdown(); // 优雅关闭，已提交任务会继续执行
+        executor.shutdown();
+        try {
+            if (!backgroundExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+                backgroundExecutor.shutdownNow(); // 超时后强制关闭
+            }
+            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                executor.shutdownNow(); // 超时后强制关闭
+            }
+        } catch (InterruptedException e) {
+            backgroundExecutor.shutdownNow();
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
         info("已清理所有资源");
     }
 
@@ -125,8 +147,20 @@ public class AppLauncherController implements ModuleLogger {
             return;
         }
         info("开始批量启动 " + appPaths.size() + " 个应用程序...");
-        appPaths.forEach(this::restartApplication);
-        info("批量启动操作完成");
+        executor.submit(() -> {
+            for (String path : appPaths) {
+                Platform.runLater(() -> info("准备启动: " + path));
+                restartApplication(path);
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    error("批量启动中断");
+                    break;
+                }
+            }
+            Platform.runLater(() -> info("批量启动操作完成"));
+        });
     }
 
     @FXML
@@ -148,7 +182,17 @@ public class AppLauncherController implements ModuleLogger {
     private void handleRemove() {
         int selectedIndex = appListView.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
-            String removedPath = appPaths.remove(selectedIndex);
+            String removedPath = appPaths.get(selectedIndex);
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("确认移除");
+            alert.setHeaderText("确认要移除所选应用程序吗？");
+            alert.setContentText("[" + removedPath + "] 会被移除，相关进程将被终止。是否继续？");
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.isEmpty() || result.get() != ButtonType.OK) {
+                info("用户取消了移除操作");
+                return;
+            }
+            appPaths.remove(selectedIndex);
             if (processTracker.killProcess(removedPath)) {
                 info("已停止并移除: " + removedPath);
             }
@@ -162,6 +206,15 @@ public class AppLauncherController implements ModuleLogger {
 
     @FXML
     private void handleClear() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("确认清空");
+        alert.setHeaderText("确认要清除所有应用程序路径吗？");
+        alert.setContentText("此操作将终止所有已启动的进程并清空列表，是否继续？");
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
+            info("用户取消了清空操作");
+            return;
+        }
         boolean anyProcessKilled = appPaths.stream()
                 .map(processTracker::killProcess)
                 .reduce(false, Boolean::logicalOr);
@@ -184,7 +237,9 @@ public class AppLauncherController implements ModuleLogger {
         });
     }
 
-    /** 重启应用程序（如果正在运行则先关闭） */
+    /**
+     * 重启应用程序（如果正在运行则先关闭）
+     */
     private void restartApplication(String path) {
         // 不要直接Platform.runLater，因为此方法已在事件线程调用
         if (processTracker.isProcessRunning(path)) {
@@ -205,7 +260,9 @@ public class AppLauncherController implements ModuleLogger {
         launchApplication(path);
     }
 
-    /** 启动应用程序 */
+    /**
+     * 启动应用程序
+     */
     private void launchApplication(String path) {
         try {
             Process process = processTracker.startProcess(path);
@@ -219,13 +276,14 @@ public class AppLauncherController implements ModuleLogger {
         }
     }
 
-    private void startReadStreamThread(InputStream stream, java.util.function.Consumer<String> consumer) {
-        new Thread(() -> {
+    private void startReadStreamThread(InputStream stream, Consumer<String> consumer) {
+        backgroundExecutor.submit(() -> {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
                 String line;
                 while ((line = reader.readLine()) != null) consumer.accept(line);
-            } catch (IOException ignored) {}
-        }).start();
+            } catch (IOException ignored) {
+            }
+        });
     }
 
     private void updateAppList() {
@@ -236,7 +294,8 @@ public class AppLauncherController implements ModuleLogger {
         File file = new File(STORAGE_FILE);
         if (!file.exists()) return;
         try (Reader reader = new FileReader(file)) {
-            List<String> savedPaths = new Gson().fromJson(reader, new TypeToken<List<String>>(){}.getType());
+            List<String> savedPaths = new Gson().fromJson(reader, new TypeToken<List<String>>() {
+            }.getType());
             if (savedPaths != null) {
                 appPaths.clear();
                 appPaths.addAll(savedPaths);
@@ -271,7 +330,9 @@ public class AppLauncherController implements ModuleLogger {
         return System.getProperty("os.name").toLowerCase().contains("win");
     }
 
-    /** 进程跟踪器 - 负责进程生命周期管理 */
+    /**
+     * 进程跟踪器 - 负责进程生命周期管理
+     */
     private class ProcessTracker {
         private final Map<String, Process> managedProcesses = new ConcurrentHashMap<>();
 
@@ -348,7 +409,7 @@ public class AppLauncherController implements ModuleLogger {
         }
 
         private void monitorProcess(String path, Process process) {
-            new Thread(() -> {
+            backgroundExecutor.submit(() -> {
                 try {
                     int exitCode = process.waitFor();
                     managedProcesses.remove(path);
@@ -356,7 +417,7 @@ public class AppLauncherController implements ModuleLogger {
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
-            }).start();
+            });
         }
 
         private String getProcessName(String path) {
