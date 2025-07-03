@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import plugin.javafxtools.controller.MainController;
 
@@ -43,6 +44,11 @@ public class ToolsApplication extends Application {
                 cleanupResources();
                 System.exit(0);
             });
+            // 加载并设置应用图标（支持PNG/ICO等格式）
+            URL iconUrl = getClass().getResource("/favicon.png");
+            if (iconUrl != null) {
+                primaryStage.getIcons().add(new Image(iconUrl.toString()));
+            }
             primaryStage.show();
 
         } catch (Exception e) {

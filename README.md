@@ -81,6 +81,10 @@
 
 ---
 
+## 运行步骤
+1.  点击maven->插件->javafx->favafx:jlink
+2.  通过项目中run.bat运行，运行时候注意配置jdk路径和项目打包后的路径
+
 ## 贡献/反馈
 
 如有建议、bug或需求，欢迎提交 issue 或 PR ～
