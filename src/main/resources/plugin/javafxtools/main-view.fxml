@@ -15,6 +15,10 @@
     <!-- 主选项卡 -->
     <TabPane fx:id="tabPane" VBox.vgrow="ALWAYS">
         <tabs>
+            <!-- 启动项工具 -->
+            <Tab text="启动项工具">
+                <fx:include fx:id="appLauncherTab" source="app-launcher-view.fxml" />
+            </Tab>
             <!-- HTTP请求调度器  对应的控制器字段命名规则是：<fx:include> 的 fx:id + "Controller" = 控制器字段名-->
             <Tab text="HTTP请求">
                 <fx:include fx:id="httpRequestTab" source="http-request-view.fxml" />
@@ -38,10 +42,6 @@
             <!-- 字符串工具 -->
             <Tab text="字符串工具">
                 <fx:include fx:id="strDataFormatTab" source="strData-format-view.fxml" />
-            </Tab>
-            <!-- 启动项工具 -->
-            <Tab text="启动项工具">
-                <fx:include fx:id="appLauncherTab" source="app-launcher-view.fxml" />
             </Tab>
         </tabs>
     </TabPane>
