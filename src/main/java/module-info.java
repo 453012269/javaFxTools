@@ -4,7 +4,9 @@ module plugin.javafxtools {
     requires javafx.fxml;           // FXML支持模块
     requires com.fasterxml.jackson.databind; // JSON处理
     requires org.java_websocket;    // WebSocket客户端
-    requires java.xml;              // XML处理
+    requires java.xml;
+    requires com.google.gson;
+    requires org.json;              // XML处理
 
     // 开放包给JavaFX FXML使用
     opens plugin.javafxtools to javafx.fxml;

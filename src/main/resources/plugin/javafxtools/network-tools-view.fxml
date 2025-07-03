@@ -21,6 +21,9 @@
     </HBox>
 
     <!-- 第1行 - 查询结果 -->
-    <Label text="查询结果:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+    <HBox spacing="10" alignment="CENTER_LEFT" GridPane.columnIndex="0" GridPane.rowIndex="1">
+        <Label text="执行日志/响应内容:"/>
+        <Button text="清空日志" onAction="#handleClearLog"/>
+    </HBox>
     <TextArea fx:id="lookupResultArea" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS"/>
 </GridPane>

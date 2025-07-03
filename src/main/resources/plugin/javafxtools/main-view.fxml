@@ -34,6 +34,15 @@
             <Tab text="数据格式化">
                 <fx:include fx:id="dataFormatTab" source="data-format-view.fxml" />
             </Tab>
+
+            <!-- 字符串工具 -->
+            <Tab text="字符串工具">
+                <fx:include fx:id="strDataFormatTab" source="strData-format-view.fxml" />
+            </Tab>
+            <!-- 启动项工具 -->
+            <Tab text="启动项工具">
+                <fx:include fx:id="appLauncherTab" source="app-launcher-view.fxml" />
+            </Tab>
         </tabs>
     </TabPane>
 

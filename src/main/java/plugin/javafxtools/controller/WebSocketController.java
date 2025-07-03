@@ -41,11 +41,11 @@ public class WebSocketController implements ModuleLogger {
      */
     @Override
     public void log(String level, String message) {
-        String formattedMessage = String.format("[%s][%s] %s",
+        String formattedMessage = String.format("\n"+"[%s][%s] %s",
                 TimeUtils.getCurrentDateTime(), level, message);
         Platform.runLater(() -> {
             if (wsMessageArea != null && wsMessageArea.getScene() != null) {
-                wsMessageArea.appendText(formattedMessage + "\n");
+                wsMessageArea.appendText(formattedMessage);
                 wsMessageArea.setScrollTop(Double.MAX_VALUE); // 自动滚动到底部
             }
         });

@@ -24,10 +24,19 @@ public class MainController {
     private NetworkToolsController networkToolsTabController; // 对应 networkToolsTab
     @FXML
     private DataFormatController dataFormatTabController;    // 对应 dataFormatTab
+    @FXML
+    private StrDataFormatController strDataFormatTabController;    // 对应 strDataFormatTab
+    @FXML
+    private AppLauncherController appLauncherTabController;    // 对应 strDataFormatTab
 
 
     // 共享服务
     private final LoggingService loggingService = new LoggingService();
+
+    // 添加获取方法
+    public AppLauncherController getAppLauncherController() {
+        return appLauncherTabController;
+    }
 
     // 中央日志区域（可选）
     @FXML
@@ -81,6 +90,16 @@ public class MainController {
         } else {
             loggingService.info("数据格式化 Tab或控制器为空");
         }
+        if (strDataFormatTabController != null) {
+            loggingService.info("字符串控制器初始化成功");
+        } else {
+            loggingService.info("字符串控制器 Tab或控制器为空");
+        }
+        if (appLauncherTabController != null) {
+            loggingService.info("启动项控制器初始化成功");
+        } else {
+            loggingService.info("启动项控制器 Tab或控制器为空");
+        }
     }
 
 
@@ -101,6 +120,12 @@ public class MainController {
         }
         if (dataFormatTabController == null) {
             errorMsg.append("数据格式化控制器注入失败\n");
+        }
+        if (strDataFormatTabController == null) {
+            errorMsg.append("字符串控制器注入失败\n");
+        }
+        if (appLauncherTabController == null) {
+            errorMsg.append("启动项控制器注入失败\n");
         }
 
         if (!errorMsg.isEmpty()) {
@@ -163,6 +188,12 @@ public class MainController {
             }
             if (dataFormatTabController != null) {
                 dataFormatTabController.cleanup();
+            }
+            if (strDataFormatTabController != null) {
+                strDataFormatTabController.cleanup();
+            }
+            if (appLauncherTabController != null) {
+//                appLauncherTabController.cleanup();
             }
             // 清理日志区域
             if (centralLogArea != null) {

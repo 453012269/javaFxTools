@@ -34,6 +34,10 @@ public class ToolsApplication extends Application {
             primaryStage.setScene(scene);
             primaryStage.setResizable(false);
 
+            // 如果主控制器包含AppLauncherController，设置primaryStage
+            if (mainController != null && mainController.getAppLauncherController() != null) {
+                mainController.getAppLauncherController().setPrimaryStage(primaryStage);
+            }
             // 添加关闭事件处理
             primaryStage.setOnCloseRequest(_ -> {
                 cleanupResources();

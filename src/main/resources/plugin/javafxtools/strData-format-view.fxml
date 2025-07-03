@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 
 <GridPane xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1"
-          fx:controller="plugin.javafxtools.controller.DataFormatController"
+          fx:controller="plugin.javafxtools.controller.StrDataFormatController"
           hgap="10" vgap="10" prefWidth="1000" prefHeight="700">
 
     <padding>

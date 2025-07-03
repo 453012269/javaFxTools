@@ -51,12 +51,12 @@ public class DataFormatController implements ModuleLogger {
      */
     @Override
     public void log(String level, String message) {
-        String formattedMessage = String.format("[%s][%s] %s",
+        String formattedMessage = String.format("\n"+"[%s][%s] %s",
                 TimeUtils.getCurrentDateTime(), level, message);
 
         Platform.runLater(() -> {
             if (formattedDataArea != null && formattedDataArea.getScene() != null) {
-                formattedDataArea.appendText(formattedMessage + "\n");
+                formattedDataArea.appendText(formattedMessage );
                 formattedDataArea.setScrollTop(Double.MAX_VALUE); // 自动滚动到底部
             }
         });
@@ -166,7 +166,17 @@ public class DataFormatController implements ModuleLogger {
         formattedDataArea.clear();
         info("已清除输入和格式化结果");
     }
-
+    /**
+     * 清空日志按钮
+     */
+    @FXML
+    private void handleClearLog() {
+        Platform.runLater(() -> {
+            if (formattedDataArea != null) {
+                formattedDataArea.clear();
+            }
+        });
+    }
     /**
      * 清理资源
      */

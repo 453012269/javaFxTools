@@ -37,12 +37,12 @@ public class NetworkToolsController implements ModuleLogger {
      */
     @Override
     public void log(String level, String message) {
-        String formattedMessage = String.format("[%s][%s] %s",
+        String formattedMessage = String.format("\n"+"[%s][%s] %s",
                 TimeUtils.getCurrentDateTime(), level, message);
 
         Platform.runLater(() -> {
             if (lookupResultArea != null && lookupResultArea.getScene() != null) {
-                lookupResultArea.appendText(formattedMessage + "\n");
+                lookupResultArea.appendText(formattedMessage);
                 lookupResultArea.setScrollTop(Double.MAX_VALUE); // 自动滚动到底部
             }
         });
@@ -146,7 +146,17 @@ public class NetworkToolsController implements ModuleLogger {
         lookupResultArea.clear();
         info("已清除查询条件和结果");
     }
-
+    /**
+     * 清空日志按钮
+     */
+    @FXML
+    private void handleClearLog() {
+        Platform.runLater(() -> {
+            if (lookupResultArea != null) {
+                lookupResultArea.clear();
+            }
+        });
+    }
     /**
      * 清理资源
      */
