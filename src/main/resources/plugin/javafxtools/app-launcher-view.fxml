@@ -22,8 +22,14 @@
 
     <!-- 第1行 - 应用程序列表 -->
     <Label text="应用程序列表:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-    <ListView fx:id="appListView" GridPane.columnIndex="1" GridPane.rowIndex="1"
-              prefHeight="200" GridPane.vgrow="NEVER"/>
+    <VBox GridPane.columnIndex="1" GridPane.rowIndex="1">
+        <ListView fx:id="appListView"
+                  prefHeight="200" GridPane.vgrow="NEVER" styleClass="enhanced-list-view"/>
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Button text="上移" onAction="#handleMoveUp"/>
+            <Button text="下移" onAction="#handleMoveDown"/>
+        </HBox>
+    </VBox>
 
     <!-- 第2行 - 操作按钮 -->
     <Label text="操作:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>

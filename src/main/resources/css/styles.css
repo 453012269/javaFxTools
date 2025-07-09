@@ -1,0 +1,10 @@
+/* 增强ListView的选中状态样式 */
+.enhanced-list-view .list-cell:filled:selected {
+    -fx-background-color: #3a7bd5;
+    -fx-text-fill: white;
+}
+
+.enhanced-list-view .list-cell:filled:selected:focused {
+    -fx-background-color: #3a7bd5;
+    -fx-text-fill: white;
+}

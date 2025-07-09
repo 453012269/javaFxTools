@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 public class AppLauncherController implements ModuleLogger {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private static final ExecutorService backgroundExecutor = Executors.newCachedThreadPool();
+    private int lastSelectedIndex = -1;
 
     private static final String STORAGE_FILE = "app_launcher_paths.json";
     private static final long PROCESS_CHECK_DELAY_MS = 1000;
@@ -75,6 +76,12 @@ public class AppLauncherController implements ModuleLogger {
             appPathField.setPromptText("输入应用程序路径或点击浏览...");
             logArea.setPromptText("操作日志将显示在这里...");
             appListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+            // 添加选择监听器
+            appListView.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal.intValue() != -1) {
+                    lastSelectedIndex = newVal.intValue();
+                }
+            });
             loadAppPaths();
             info("应用程序启动器初始化完成");
         });
@@ -205,6 +212,64 @@ public class AppLauncherController implements ModuleLogger {
     }
 
     @FXML
+    private void handleMoveUp() {
+        int selectedIndex = appListView.getSelectionModel().getSelectedIndex();
+        if (selectedIndex == -1 && lastSelectedIndex != -1) {
+            selectedIndex = lastSelectedIndex;
+            appListView.getSelectionModel().select(selectedIndex);
+        }
+
+        if (selectedIndex > 0) {
+            Collections.swap(appPaths, selectedIndex, selectedIndex - 1);
+            updateAppList();
+            saveAppPaths();
+
+            // 延迟一小段时间再设置选中状态，确保UI更新完成
+            final int newSelectedIndex = selectedIndex - 1;
+            Platform.runLater(() -> {
+                appListView.getSelectionModel().select(newSelectedIndex);
+                appListView.requestFocus(); // 确保ListView获得焦点
+                lastSelectedIndex = newSelectedIndex;
+            });
+
+            info("已将应用程序上移: " + appPaths.get(selectedIndex - 1));
+        } else if (selectedIndex == 0) {
+            info("已经是第一个，无法上移");
+        } else {
+            error("请先选择要移动的应用程序");
+        }
+    }
+
+
+    @FXML
+    private void handleMoveDown() {
+        int selectedIndex = appListView.getSelectionModel().getSelectedIndex();
+        if (selectedIndex == -1 && lastSelectedIndex != -1) {
+            selectedIndex = lastSelectedIndex;
+            appListView.getSelectionModel().select(selectedIndex);
+        }
+
+        if (selectedIndex >= 0 && selectedIndex < appPaths.size() - 1) {
+            Collections.swap(appPaths, selectedIndex, selectedIndex + 1);
+            updateAppList();
+            saveAppPaths();
+
+            // 延迟一小段时间再设置选中状态，确保UI更新完成
+            final int newSelectedIndex = selectedIndex + 1;
+            Platform.runLater(() -> {
+                appListView.getSelectionModel().select(newSelectedIndex);
+                appListView.requestFocus(); // 确保ListView获得焦点
+                lastSelectedIndex = newSelectedIndex;
+            });
+            info("已将应用程序下移: " + appPaths.get(newSelectedIndex));
+        } else if (selectedIndex == appPaths.size() - 1) {
+            info("已经是最后一个，无法下移");
+        } else {
+            error("请先选择要移动的应用程序");
+        }
+    }
+
+    @FXML
     private void handleClear() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("确认清空");
@@ -287,7 +352,15 @@ public class AppLauncherController implements ModuleLogger {
     }
 
     private void updateAppList() {
-        Platform.runLater(() -> appListView.getItems().setAll(appPaths));
+        // 保存当前选中索引
+       final int selectedIndex = appListView.getSelectionModel().getSelectedIndex();
+        Platform.runLater(() -> {
+            appListView.getItems().setAll(appPaths);
+            // 恢复选中状态
+            if (selectedIndex >= 0 && selectedIndex < appPaths.size()) {
+                appListView.getSelectionModel().select(selectedIndex);
+            }
+        });
     }
 
     private void loadAppPaths() {
